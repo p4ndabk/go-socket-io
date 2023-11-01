@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fala ai</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #container {
+            text-align: center;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        #output {
+            text-align: left;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="container center">
+        <h2>What would you like to say to the world?</h2>
+        <div id="output"></div>
+        <input type="text" id="message" placeholder="Type a message">
+        <button onclick="sendMessage()">Send Message</button>
+    </div>
+
+    <script>
+       // Função para lidar com mensagens recebidas
+       function handleReceivedMessage(event) {
+            const output = document.getElementById("output");
+            const message = JSON.parse(event.data);
+            output.innerHTML += `Received: ${message.greeting}<br>`;
+        }
+
+        // Inicializa a conexão WebSocket
+        let ws = new WebSocket("ws://localhost:9100/socket");
+
+        // Manipulador de eventos para quando a conexão é aberta
+        ws.onopen = (event) => {
+            console.log("WebSocket connection opened");
+        };
+
+        // Manipulador de eventos para quando a conexão é fechada
+        ws.onclose = (event) => {
+            console.log("WebSocket connection closed");
+        };
+
+        // Manipulador de eventos para quando ocorre um erro na conexão
+        ws.onerror = (event) => {
+            console.error("WebSocket error:", event);
+        };
+
+        // Adiciona o manipulador de eventos para mensagens recebidas
+        ws.onmessage = handleReceivedMessage;
+
+        // Função para enviar uma mensagem
+        function sendMessage() {
+            const messageInput = document.getElementById("message");
+            const messageText = messageInput.value;
+            
+            // Verifica se a entrada não está vazia
+            if (messageText.trim() === "") {
+                return;
+            }
+
+            // Cria um objeto de mensagem
+            const msg = {
+                greeting: messageText
+            };
+
+            // Envia a mensagem como uma string JSON
+            ws.send(JSON.stringify(msg));
+
+            // Limpa o campo de entrada
+            messageInput.value = "";
+        }
+    </script>
+</body>
+</html>
