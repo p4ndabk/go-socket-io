@@ -14,7 +14,7 @@ This is a simple chat application that allows multiple users to connect and chat
 To run the chat application locally, follow these steps:
 
 1. Clone the repository: `git clone https://github.com/p4ndabk/go-web-socket`
-2. Navigate to the project directory: `cd real-time-chat`
+2. Navigate to the project directory: `cd go-web-socket`
 3. Install the necessary dependencies: `go get github.com/gorilla/websocket`
 4. Build and run the server: `go run main.go`
 5. Open the chat application in your web browser: `http://localhost:9100`.
