@@ -40,6 +40,23 @@
             cursor: pointer;
         }
 
+        #name-field {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #name-field input[type="text"] {
+            padding: 5px;
+            border: none;
+            outline: none;
+        }
+
+
         button:hover {
             background-color: #0056b3;
         }
@@ -47,9 +64,13 @@
 </head>
 <body>
     <div id="container center">
+        <div id="name-field">
+            <input type="text" id="name" placeholder="Your Name" required>
+        </div>
+
         <h2>What would you like to say to the world?</h2>
         <div id="output"></div>
-        <input type="text" id="message" placeholder="Type a message">
+        <input type="text" id="message" placeholder="Type a message" required>
         <button onclick="sendMessage()">Send Message</button>
     </div>
 
@@ -62,7 +83,7 @@
         }
 
         // Inicializa a conexão WebSocket
-        let ws = new WebSocket("ws://localhost:9100/socket");
+        let ws = new WebSocket("ws://localhost:9100/socket/a9c7552e-7983-11ee-b962-0242ac120002");
 
         // Manipulador de eventos para quando a conexão é aberta
         ws.onopen = (event) => {
@@ -85,17 +106,25 @@
         // Função para enviar uma mensagem
         function sendMessage() {
             const messageInput = document.getElementById("message");
+            const nameInput = document.getElementById("name");
+
             const messageText = messageInput.value;
+            const userName = nameInput.value;
+
             
             // Verifica se a entrada não está vazia
             if (messageText.trim() === "") {
                 return;
             }
 
+            if (userName.trim() === "") {
+                return;
+            }
+
             // Cria um objeto de mensagem
             const msg = {
                 msg: messageText,
-                name: "David"
+                name: userName
             };
 
             // Envia a mensagem como uma string JSON

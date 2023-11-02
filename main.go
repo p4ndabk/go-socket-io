@@ -20,7 +20,7 @@ var (
         WriteBufferSize: 1024,
     }
 
-    wsConn *websocket.Conn
+    wsConns = make(map[string]map[*websocket.Conn]bool)
 )
 
 func WsEndpoint(w http.ResponseWriter, r *http.Request) {     
@@ -29,11 +29,19 @@ func WsEndpoint(w http.ResponseWriter, r *http.Request) {
      }
 
     var err error
-    wsConn, err = wsUpgrader.Upgrade(w, r, nil)
+    wsConn, err := wsUpgrader.Upgrade(w, r, nil)
     if err != nil {
         fmt.Println("could not upgrade: %s\n", err.Error())        
         return
     }
+
+    vars := mux.Vars(r)
+	uuid := vars["uuid"]
+    if wsConns[uuid] == nil {
+		wsConns[uuid] = make(map[*websocket.Conn]bool)
+	}
+
+    wsConns[uuid][wsConn] = true
 
     defer wsConn.Close()
 
@@ -47,12 +55,12 @@ func WsEndpoint(w http.ResponseWriter, r *http.Request) {
         }
 
         fmt.Printf("Message Received: %s\n", msg.Msg)
-        SendMessage(msg.Msg, msg.Name)
+        SendMessage(uuid, msg.Msg, msg.Name)
     }
 }
 
-func SendMessage(msg string, name string) {
-    if wsConn == nil {
+func SendMessage(uuid string, msg string, name string) {
+    if wsConns[uuid] == nil {
         fmt.Println("WebSocket connection has not been established")
         return
     }
@@ -61,11 +69,13 @@ func SendMessage(msg string, name string) {
         Msg: msg,
         Name: name,
     }
-
-    if err := wsConn.WriteJSON(response); err != nil {
-        fmt.Println("error writing Json: %s\n", err.Error())
-        panic(err)
-    }
+    for wsConn := range wsConns[uuid] {
+        err := wsConn.WriteJSON(response)
+        if err != nil {
+            fmt.Println("error writing JSON:", err)
+            panic(err)
+        }
+    } 
 
     fmt.Printf("Message Sent: %s\n", response.Msg)
 }
@@ -79,16 +89,19 @@ func wsMessage(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+	vars := mux.Vars(r)
+	uuid := vars["uuid"]
+
     fmt.Printf("Message Received: %s\n", msg.Msg)
 
-    SendMessage(msg.Msg, msg.Name)
+    SendMessage(uuid, msg.Msg, msg.Name)
 }
 
 func main() {
     router := mux.NewRouter()
 
-    router.HandleFunc("/socket", WsEndpoint)
-    router.HandleFunc("/send", wsMessage).Methods("POST")
+    router.HandleFunc("/socket/{uuid}", WsEndpoint)
+    router.HandleFunc("/send/{uuid}", wsMessage).Methods("POST")
 
 
     log.Fatal(http.ListenAndServe(":9100", router))
