@@ -75,17 +75,18 @@
     </div>
 
     <script>
-       // Função para lidar com mensagens recebidas
        function handleReceivedMessage(event) {
             const output = document.getElementById("output");
             const message = JSON.parse(event.data);
+            console.log("On Message:", event);
             output.innerHTML += `${message.name}: ${message.msg}<br>`;
         }
 
-        // Inicializa a conexão WebSocket
-        let ws = new WebSocket("ws://localhost:9100/socket/a9c7552e-7983-11ee-b962-0242ac120002");
+        const url = new URL(window.location.href);
+        const params = new URLSearchParams(url.search);
+        const uuid = params.get("uuid");
+        let ws = new WebSocket("ws://localhost:9100/socket/" + uuid);
 
-        // Manipulador de eventos para quando a conexão é aberta
         ws.onopen = (event) => {
             console.log("WebSocket connection opened");
         };

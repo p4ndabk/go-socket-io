@@ -102,6 +102,13 @@ func main() {
 
     router.HandleFunc("/socket/{uuid}", WsEndpoint)
     router.HandleFunc("/send/{uuid}", wsMessage).Methods("POST")
+    router.HandleFunc("/channel/{uuid}", func(w http.ResponseWriter, r *http.Request) {
+        vars := mux.Vars(r)
+        uuid := vars["uuid"]
+        http.ServeFile(w, r, "index.html")
+        fmt.Printf("Channel: %s\n", uuid)
+    })
+
 
 
     log.Fatal(http.ListenAndServe(":9100", router))
