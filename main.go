@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 )
 
 type Message struct {
     Msg string `json:"msg"`
+    Name string `json:"name"`
 }
 
 var (
@@ -47,11 +47,11 @@ func WsEndpoint(w http.ResponseWriter, r *http.Request) {
         }
 
         fmt.Printf("Message Received: %s\n", msg.Msg)
-        SendMessage(msg.Msg)
+        SendMessage(msg.Msg, msg.Name)
     }
 }
 
-func SendMessage(msg string) {
+func SendMessage(msg string, name string) {
     if wsConn == nil {
         fmt.Println("WebSocket connection has not been established")
         return
@@ -59,6 +59,7 @@ func SendMessage(msg string) {
     
      response := Message{
         Msg: msg,
+        Name: name,
     }
 
     if err := wsConn.WriteJSON(response); err != nil {
@@ -80,7 +81,7 @@ func wsMessage(w http.ResponseWriter, r *http.Request) {
 
     fmt.Printf("Message Received: %s\n", msg.Msg)
 
-    SendMessage(msg.Msg)
+    SendMessage(msg.Msg, msg.Name)
 }
 
 func main() {

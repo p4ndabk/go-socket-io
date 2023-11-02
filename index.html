@@ -58,7 +58,7 @@
        function handleReceivedMessage(event) {
             const output = document.getElementById("output");
             const message = JSON.parse(event.data);
-            output.innerHTML += `Received: ${message.msg}<br>`;
+            output.innerHTML += `${message.name}: ${message.msg}<br>`;
         }
 
         // Inicializa a conexão WebSocket
@@ -94,7 +94,8 @@
 
             // Cria um objeto de mensagem
             const msg = {
-                msg: messageText
+                msg: messageText,
+                name: "David"
             };
 
             // Envia a mensagem como uma string JSON
